@@ -1,0 +1,74 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+name: deploy
+
+# @@ main 브랜치에 푸시(push) 이벤트가 발생할 때마다 워크플로우가 실행
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# @@ deploy라는 이름의 작업(job)을 정의
+jobs:
+  deploy:
+
+# @@ 작업이 실행될 운영 체제를 최신 버전의 Ubuntu로 설정
+    runs-on: ubuntu-latest
+
+#@@ Node.js 버전 18.x를 사용하여 작업을 실행
+    strategy:
+      matrix:
+        node-version: [18.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    # @@ actions/checkout@v3 액션을 사용하여 소스 코드를 체크아웃
+    - name : checkout source code
+      uses: actions/checkout@v3
+
+    # @@ actions/setup-node@v3 액션을 사용하여 워크플로우에서 사용할 Node.js 버전을 설정하고, npm 캐시를 사용 
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    # @@  의존성 패키지를 설치 
+    - name: Install dependencies
+      run: npm install
+    
+    # @@ Jest 테스트를 실행
+    # - name: Run Jest tests
+    #   run: npm test
+      
+    # - name: build file
+    #   run: npm run build
+
+#     # @@ .env 파일을 생성하고, 저장소 시크릿으로부터 값을 가져와 해당 파일에 쓰기 작업을 수행
+#     - name: create env file
+#       working-directory: ./
+#       run: |
+#         touch .env
+#         cat <<EOF >> .env
+#         ${{ secrets.ENV }}
+#         EOF
+#     # @@ 프로젝트의 모든 파일과 디렉터리를 meer.zip 파일로 압축
+#     - name: zip distributions
+#       run: zip -r meer.zip ./
+
+#     # @@ aws-actions/configure-aws-credentials@v1 액션을 사용하여 AWS 인증 정보를 설정
+#     - name: AWS configure credentials
+#       uses: aws-actions/configure-aws-credentials@v1
+#       with:
+#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#         aws-region: ap-northeast-2
+    
+#     #  @@ meer.zip 파일을 S3 버킷에 업로드
+#     - name: upload to S3
+#       run: aws s3 cp --region ap-northeast-2 ./meer.zip s3://my-github-actions-s3-bucket-meer/
+
+#     #  @@ AWS CLI를 사용하여 AWS CodeDeploy를 이용해 배포를 시작
+#     - name: deploy with AWS codeDeploy
+#       run: aws deploy create-deployment --application-name my-codedeploy-app --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name my-codedeploy-deployment-group2 --s3-location bucket=my-github-actions-s3-bucket-meer,bundleType=zip,key=meer.zip
