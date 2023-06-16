@@ -1,0 +1,39 @@
+import { UUID } from "crypto";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Users } from "./Users.entity";
+import { Funding } from "./Funding.entity";
+
+@Entity({name: 'Celebration'})
+export class Celebration {
+    @PrimaryGeneratedColumn('uuid')
+    celebration_id: UUID
+
+    @Column({type: 'varchar', nullable: true})
+    funding_msg: string
+
+    @Column({type: 'varchar', nullable: true})
+    funding_nickname: string
+
+    @CreateDateColumn({type: 'datetime', nullable: false})
+    created_at: Date
+
+    @UpdateDateColumn({type: 'datetime', nullable: false})
+    updated_at: Date
+
+
+    // * Users | 1 : M | FundingLike
+    @ManyToOne(() => Users, (users) => users.Celebration, {
+        cascade: true,
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn([{ name: 'user_id', referencedColumnName: 'user_id' }])
+    Users: Users;
+
+    // * Users | 1 : M | FundingLike
+    @ManyToOne(() => Funding, (users) => users.Celebration, {
+        cascade: true,
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn([{ name: 'funding_id', referencedColumnName: 'funding_id' }])
+    Funding: Funding;
+}
