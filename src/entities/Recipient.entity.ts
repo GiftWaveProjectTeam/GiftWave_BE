@@ -22,7 +22,7 @@ export class Recipient {
     updated_at: Date
 
 
-    // * Users | 1 : M | FundingLike
+    // * Users | 1 : 1 | Funding
     @OneToOne(() => Funding, (funding) => funding.Recipient, {
         cascade: true,
         onDelete: 'CASCADE',
@@ -30,7 +30,7 @@ export class Recipient {
     @JoinColumn([{ name: 'funding_id', referencedColumnName: 'funding_id' }])
     Funding: Funding;
 
-    // * Users | 1 : M | FundingLike
+    // * Users | 1 : 1 | Address
     @OneToOne(() => Address, (address) => address.Recipient, {
         cascade: true,
         onDelete: 'CASCADE',

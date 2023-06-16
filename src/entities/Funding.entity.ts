@@ -70,7 +70,7 @@ export class Funding {
     })
     Payment: Payment[];
 
-    // * Users | 1 : M | Payment
+    // * Users | 1 : M | Recipient
     @OneToOne(() => Recipient, (recipient) => recipient.Funding, {
         cascade: true,
         onDelete: 'CASCADE',

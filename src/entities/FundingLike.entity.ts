@@ -18,8 +18,8 @@ export class FundingLike {
     updated_at: Date
 
 
-    
-    // * Users | 1 : M | FundingLike
+
+    // * Users | M : 1 | Users
     @ManyToOne(() => Users, (users) => users.FundingLike, {
         cascade: true,
         onDelete: 'CASCADE',
@@ -27,7 +27,7 @@ export class FundingLike {
     @JoinColumn([{ name: 'user_id', referencedColumnName: 'user_id' }])
     Users: Users;
 
-    // * Users | 1 : M | FundingLike
+    // * Users | M : 1 | Funding
     @ManyToOne(() => Funding, (users) => users.FundingLike, {
         cascade: true,
         onDelete: 'CASCADE',

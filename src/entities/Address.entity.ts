@@ -53,7 +53,7 @@ export class Address {
     updated_at: Date
 
 
-    // * Users | 1 : M | FundingLike
+    // * Users | 1 : 1 | Recipient
     @OneToOne(() => Recipient, (recipient) => recipient.Address, {
         cascade: true,
         onDelete: 'CASCADE',
