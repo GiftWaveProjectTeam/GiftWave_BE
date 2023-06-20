@@ -8,7 +8,7 @@ import { FundingLike } from './entities/FundingLike.entity';
 import { Celebration } from './entities/Celebration.entity';
 import { Payment } from './entities/Payment.entity';
 import { Recipient } from './entities/Recipient.entity';
-import { Address } from './entities/Address.entity';
+import { Account } from './entities/Account.entity';
 
 @Module({
   imports: [
@@ -34,7 +34,7 @@ import { Address } from './entities/Address.entity';
           Celebration,
           Payment,
           Recipient,
-          Address,
+          Account,
         ],
         synchronize: true,
       }),

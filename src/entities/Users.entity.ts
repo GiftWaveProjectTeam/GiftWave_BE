@@ -41,6 +41,12 @@ export class Users {
   @Column({ type: 'varchar', nullable: true })
   user_role: 'UR01';
 
+  @Column({ type: 'varchar', nullable: false })
+  gender: string;
+
+  @Column({ type: 'timestamptz', nullable: false })
+  birthday: Date;
+
   @CreateDateColumn({ type: 'timestamptz', nullable: false })
   created_at: Date;
 

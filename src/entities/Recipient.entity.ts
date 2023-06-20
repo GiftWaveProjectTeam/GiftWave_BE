@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Funding } from './Funding.entity';
-import { Address } from './Address.entity';
+import { Account } from './Account.entity';
 
 @Entity({ name: 'Recipient' })
 export class Recipient {
@@ -22,7 +22,7 @@ export class Recipient {
   @Column({ type: 'varchar', nullable: false })
   phone_number: string;
 
-  @CreateDateColumn({ type: 'timestamptz', nullable: false })
+  @CreateDateColumn({ type: 'datetime', nullable: false })
   created_at: Date;
 
   @UpdateDateColumn({ type: 'timestamptz', nullable: false })
@@ -30,15 +30,16 @@ export class Recipient {
 
   // * Users | 1 : 1 | Funding
   @OneToOne(() => Funding, (funding) => funding.Recipient, {
+    cascade: true,
     onDelete: 'CASCADE',
   })
   @JoinColumn([{ name: 'funding_id', referencedColumnName: 'funding_id' }])
   Funding: Funding;
 
-  // * Users | 1 : 1 | Address
-  @OneToOne(() => Address, (address) => address.Recipient, {
+  // * Users | 1 : 1 | Account
+  @OneToOne(() => Account, (account) => account.Recipient, {
     cascade: true,
     onDelete: 'CASCADE',
   })
-  Address: Address;
+  Account: Account;
 }

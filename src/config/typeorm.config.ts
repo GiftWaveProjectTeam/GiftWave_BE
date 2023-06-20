@@ -1,10 +1,8 @@
-import { ConfigService } from '@nestjs/config';
+// import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { config } from 'dotenv';
-
 config();
-
-const configService = new ConfigService();
+// const configService = new ConfigService();
 
 export const typeORMConfig: TypeOrmModuleOptions = {
   type: 'postgres',
