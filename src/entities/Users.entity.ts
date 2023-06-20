@@ -41,10 +41,10 @@ export class Users {
   @Column({ type: 'varchar', nullable: true })
   user_role: 'UR01';
 
-  @CreateDateColumn({ type: 'datetime', nullable: false })
+  @CreateDateColumn({ type: 'timestamptz', nullable: false })
   created_at: Date;
 
-  @UpdateDateColumn({ type: 'datetime', nullable: false })
+  @UpdateDateColumn({ type: 'timestamptz', nullable: false })
   updated_at: Date;
 
   // * Users | 1 : M | Funding

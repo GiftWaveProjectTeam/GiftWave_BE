@@ -4,12 +4,10 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Users } from './Users.entity';
 import { Funding } from './Funding.entity';
 import { Address } from './Address.entity';
 
@@ -24,15 +22,14 @@ export class Recipient {
   @Column({ type: 'varchar', nullable: false })
   phone_number: string;
 
-  @CreateDateColumn({ type: 'datetime', nullable: false })
+  @CreateDateColumn({ type: 'timestamptz', nullable: false })
   created_at: Date;
 
-  @UpdateDateColumn({ type: 'datetime', nullable: false })
+  @UpdateDateColumn({ type: 'timestamptz', nullable: false })
   updated_at: Date;
 
   // * Users | 1 : 1 | Funding
   @OneToOne(() => Funding, (funding) => funding.Recipient, {
-    cascade: true,
     onDelete: 'CASCADE',
   })
   @JoinColumn([{ name: 'funding_id', referencedColumnName: 'funding_id' }])

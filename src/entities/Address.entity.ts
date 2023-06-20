@@ -54,15 +54,14 @@ export class Address {
   @Column({ type: 'varchar', nullable: true })
   road_name_english: string;
 
-  @CreateDateColumn({ type: 'datetime', nullable: false })
+  @CreateDateColumn({ type: 'timestamptz', nullable: false })
   created_at: Date;
 
-  @UpdateDateColumn({ type: 'datetime', nullable: false })
+  @UpdateDateColumn({ type: 'timestamptz', nullable: false })
   updated_at: Date;
 
   // * Users | 1 : 1 | Recipient
   @OneToOne(() => Recipient, (recipient) => recipient.Address, {
-    cascade: true,
     onDelete: 'CASCADE',
   })
   @JoinColumn([{ name: 'recipient_id', referencedColumnName: 'recipient_id' }])

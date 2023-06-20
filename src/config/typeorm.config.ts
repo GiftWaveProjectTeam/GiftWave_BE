@@ -8,13 +8,13 @@ const configService = new ConfigService();
 
 export const typeORMConfig: TypeOrmModuleOptions = {
   type: 'postgres',
-  host: configService.get<string>('TYPEORM_HOST'),
-  port: configService.get<number>('TYPEORM_PORT'),
-  username: configService.get<string>('TYPEORM_USERNAME'),
-  password: configService.get<string>('TYPEORM_PASSWORD'),
-  database: configService.get<string>('TYPEORM_DATABASE'),
+  host: 'localhost',
+  port: 5432,
+  username: 'postgres',
+  password: 'black820',
+  database: 'giftwave-dev',
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
-  migrations: ['src/migrations/*.ts'],
-  migrationsTableName: 'migrations',
+  // migrations: ['src/migrations/*.ts'],
+  // migrationsTableName: 'migrations',
   synchronize: true,
 };
