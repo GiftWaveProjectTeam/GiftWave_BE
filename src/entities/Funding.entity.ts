@@ -30,7 +30,7 @@ export class Funding {
   @Column({ type: 'varchar', nullable: false })
   page_url: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: true })
   product_name: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -39,11 +39,11 @@ export class Funding {
   @Column({ type: 'bigint', nullable: false })
   price: bigint;
 
-  @Column({ type: 'datetime', nullable: false })
+  @Column({ type: 'timestamptz', nullable: false })
   finish_date: Date;
 
-  @Column({ type: 'boolean', nullable: false })
-  perchase: true;
+  @Column({ type: 'boolean', nullable: true })
+  perchase: false;
 
   @CreateDateColumn({ type: 'timestamptz', nullable: false })
   created_at: Date;
@@ -53,7 +53,6 @@ export class Funding {
 
   // * Users | 1 : M | FundingLike
   @ManyToOne(() => Users, (users) => users.Funding, {
-    cascade: true,
     onDelete: 'CASCADE',
   })
   @JoinColumn([{ name: 'user_id', referencedColumnName: 'user_id' }])
