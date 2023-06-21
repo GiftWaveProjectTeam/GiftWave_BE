@@ -18,7 +18,7 @@ export class FundingService {
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
   ) {}
-  async createFunding(createfunding: CreateFundingDto) {
+  async createFunding(createfunding: CreateFundingDto): Promise<object> {
     const {
       title,
       content,
@@ -31,28 +31,28 @@ export class FundingService {
       bank,
       accountNum,
     } = createfunding;
-
-    const funding = this.fundingRepository.create({
+    //트랜젝션걸어야할듯
+    const funding = await this.fundingRepository.save({
       title,
       content,
       page_url: url,
+      perchase: false,
       option,
       price,
       finish_date: finishDate,
     });
-    const recipient = this.recipientRepository.create({
+
+    const recipient = await this.recipientRepository.save({
       name: receiveName,
       phone_number: phoneNum,
+      Funding: funding,
     });
-    const account = this.accountRepository.create({
+    await this.accountRepository.save({
       bank,
       account: accountNum,
+      Recipient: recipient,
     });
 
-    await this.fundingRepository.save(funding);
-    await this.recipientRepository.save(recipient);
-    await this.accountRepository.save(account);
-
-    return { message: '펀딩 등록이 완료되었습니다.' };
+    return Promise.resolve({ message: '펀딩 등록이 완료되었습니다.' });
   }
 }

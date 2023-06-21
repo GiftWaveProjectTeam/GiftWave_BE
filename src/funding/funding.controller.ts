@@ -7,8 +7,9 @@ import { CreateFundingDto } from './dto/create-funding.dto';
 export class FundingController {
   constructor(private readonly fundingService: FundingService) {}
 
+  //펀딩등록
   @Post()
-  createFunding(@Body() createfunding: CreateFundingDto) {
+  createFunding(@Body() createfunding: CreateFundingDto): Promise<object> {
     return this.fundingService.createFunding(createfunding);
   }
 }
