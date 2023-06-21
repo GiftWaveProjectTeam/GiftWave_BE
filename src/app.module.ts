@@ -24,9 +24,9 @@ import { Account } from './entities/Account.entity';
         type: 'postgres',
         host: 'localhost',
         port: 5432,
-        username: 'postgres',
-        password: 'black820',
-        database: 'giftwave-dev',
+        username: ,
+        password: ,
+        database: ,
         entities: [
           Funding,
           Users,
