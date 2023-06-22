@@ -141,4 +141,9 @@ export class FundingService {
 
     return queryRunner;
   }
+
+  async getAllFunding() {
+    const postList = await this.fundingRepository.find();
+    console.log(postList);
+  }
 }

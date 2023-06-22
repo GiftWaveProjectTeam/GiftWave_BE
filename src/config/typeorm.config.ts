@@ -15,4 +15,5 @@ export const typeORMConfig: TypeOrmModuleOptions = {
   // migrations: ['src/migrations/*.ts'],
   // migrationsTableName: 'migrations',
   synchronize: true,
+  logging: true,
 };

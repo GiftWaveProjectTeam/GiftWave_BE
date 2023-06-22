@@ -15,6 +15,7 @@ import { FundingLike } from './FundingLike.entity';
 import { Celebration } from './Celebration.entity';
 import { Payment } from './Payment.entity';
 import { Recipient } from './Recipient.entity';
+import { Resource } from './Resource.entity';
 
 @Entity({ name: 'Funding' })
 export class Funding {
@@ -85,4 +86,11 @@ export class Funding {
     onDelete: 'CASCADE',
   })
   Recipient: Recipient;
+
+  // * Funding | 1 : 1 | Resource
+  @OneToOne(() => Resource, (resource) => resource.Funding, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  Resource: Resource;
 }
