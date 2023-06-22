@@ -39,8 +39,8 @@ export class Funding {
   @Column({ type: 'bigint', nullable: false })
   price: bigint;
 
-  @Column({ type: 'datetime', nullable: false })
-  finish_date: Date;
+    @Column({type: 'timestamptz', nullable: false})
+    finish_date: Date
 
   @Column({ type: 'boolean', nullable: false })
   perchase: true;
@@ -53,7 +53,6 @@ export class Funding {
 
   // * Users | 1 : M | FundingLike
   @ManyToOne(() => Users, (users) => users.Funding, {
-    cascade: true,
     onDelete: 'CASCADE',
   })
   @JoinColumn([{ name: 'user_id', referencedColumnName: 'user_id' }])

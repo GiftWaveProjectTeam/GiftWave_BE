@@ -11,6 +11,7 @@ import { Funding } from './Funding.entity';
 import { FundingLike } from './FundingLike.entity';
 import { Celebration } from './Celebration.entity';
 import { Payment } from './Payment.entity';
+import { UserRole, UserStatus, UserType } from 'src/users/users.enum';
 
 @Entity({ name: 'Users' })
 export class Users {
@@ -33,13 +34,13 @@ export class Users {
   profile_image: string;
 
   @Column({ type: 'varchar', nullable: false })
-  user_type: string;
+  user_type: UserType;
 
   @Column({ type: 'varchar', nullable: true })
-  user_status: 'US01';
+  user_status: UserStatus;
 
   @Column({ type: 'varchar', nullable: true })
-  user_role: 'UR01';
+  user_role: UserRole;
 
   @Column({ type: 'varchar', nullable: false })
   gender: string;
