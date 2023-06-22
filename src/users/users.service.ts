@@ -47,7 +47,11 @@ export class UsersService {
             user_role: UserRole.UR01,
         })
 
-        await this.userRepository.save(result)
-        return result;
+        try {
+            await this.userRepository.save(result)
+            return result;
+        } catch (error) {
+            throw new BadRequestException('회원가입에 실패하였습니다.')
+        }
     }
 }
