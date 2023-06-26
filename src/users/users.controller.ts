@@ -9,8 +9,7 @@ export class UsersController {
 
     // 회원가입
     @Post()
-    @UsePipes(ValidationPipe)
-    createUser(@Body() createUserDto: CreateUserDto): Promise<Users> {
+    createUser(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<Users> {
         return this.usersService.createUser(createUserDto)
     }
 }
