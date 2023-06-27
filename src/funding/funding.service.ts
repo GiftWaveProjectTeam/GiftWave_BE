@@ -6,9 +6,15 @@ import { Repository, EntityManager } from 'typeorm';
 import { Recipient } from 'src/entities/Recipient.entity';
 import { Account } from 'src/entities/Account.entity';
 import { InjectEntityManager } from '@nestjs/typeorm';
+import { S3 } from 'aws-sdk';
+import { ConfigService } from '@nestjs/config';
+import { config } from 'dotenv';
+config();
+const configService = new ConfigService();
 
 @Injectable()
 export class FundingService {
+  private s3: S3;
   constructor(
     @InjectRepository(Funding)
     private fundingRepository: Repository<Funding>,
@@ -21,9 +27,21 @@ export class FundingService {
 
     @InjectEntityManager()
     private entityManager: EntityManager,
-  ) {}
+  ) {
+    // AWS 인증 정보 설정
+    this.s3 = new S3({
+      accessKeyId: configService.get('AWS_ACCESS_KEY'),
+      secretAccessKey: configService.get('AWS_SECRET_KEY'),
+      region: null, // AWS S3 버킷이 위치한 리전
+    });
+  }
 
-  async createFunding(createFunding: CreateFundingDto): Promise<object> {
+  async createFunding(
+    bucketName: string,
+    key: string,
+    fileData: Buffer,
+    createFunding: CreateFundingDto,
+  ): Promise<object> {
     const {
       title,
       content,
@@ -36,6 +54,15 @@ export class FundingService {
       bank,
       accountNum,
     } = createFunding;
+    //s3 업로드
+    const uploadParams = {
+      Bucket: bucketName,
+      Key: key,
+      Body: fileData,
+    };
+    const uploadResult = await this.s3.upload(uploadParams).promise();
+    console.log(uploadResult);
+
     //트랜잭션 적용
     const queryRunner = this.entityManager.transaction(
       async (transactionEntityManager) => {

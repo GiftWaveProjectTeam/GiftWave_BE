@@ -1,7 +1,18 @@
-import { Post, Controller, Body, Get } from '@nestjs/common';
+import {
+  Post,
+  Controller,
+  Body,
+  Get,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { FundingService } from './funding.service';
 import { CreateFundingDto } from './dto/create-funding.dto';
-// import { Funding } from 'src/entities/Funding.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ConfigService } from '@nestjs/config';
+import { config } from 'dotenv';
+config();
+const configService = new ConfigService();
 
 @Controller('funding')
 export class FundingController {
@@ -9,8 +20,22 @@ export class FundingController {
 
   //펀딩등록
   @Post()
-  createFunding(@Body() createfunding: CreateFundingDto): Promise<object> {
-    return this.fundingService.createFunding(createfunding);
+  @UseInterceptors(FileInterceptor('Image'))
+  async uploadFile(
+    @UploadedFile() Image: Express.Multer.File,
+    @Body() createfunding: CreateFundingDto,
+  ): Promise<object> {
+    //업로드 파일정보
+    const bucketName = configService.get('AWS_BUCKET_NAME');
+    const key = Image.originalname;
+    const fileData = Image.buffer;
+
+    return this.fundingService.createFunding(
+      bucketName,
+      key,
+      fileData,
+      createfunding,
+    );
   }
 
   //펀딩 조회
