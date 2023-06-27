@@ -10,6 +10,7 @@ import { S3 } from 'aws-sdk';
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { Resource } from 'src/entities/Resource.entity';
+import { v4 as uuidv4 } from 'uuid';
 config();
 const configService = new ConfigService();
 
@@ -56,9 +57,10 @@ export class FundingService {
       accountNum,
     } = createFunding;
     //s3 업로드
+    const uuid = uuidv4();
     const uploadParams = {
       Bucket: bucketName,
-      Key: key,
+      Key: `${uuid}-${key}`,
       Body: fileData,
     };
     const uploadResult = await this.s3.upload(uploadParams).promise();
@@ -91,7 +93,7 @@ export class FundingService {
         //이미지 정보 db 저장
         await transactionEntityManager.save(Resource, {
           resource_type: 'RT01',
-          file_name: uploadResult.Key,
+          file_name: key,
           file_location: uploadResult.Location,
           resource_order: 1,
           Funding: funding,
