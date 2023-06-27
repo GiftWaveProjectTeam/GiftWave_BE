@@ -93,4 +93,5 @@ export class Funding {
     onDelete: 'CASCADE',
   })
   Resource: Resource;
+  file_location: any;
 }

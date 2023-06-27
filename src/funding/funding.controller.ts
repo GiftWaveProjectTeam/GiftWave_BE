@@ -5,6 +5,7 @@ import {
   Get,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { FundingService } from './funding.service';
 import { CreateFundingDto } from './dto/create-funding.dto';
@@ -40,7 +41,7 @@ export class FundingController {
 
   //펀딩 조회
   @Get()
-  getAllFunding() {
-    return this.fundingService.getAllFunding();
+  getAllFunding(@Query('user') user: string): Promise<object> {
+    return this.fundingService.getAllFunding(user);
   }
 }
