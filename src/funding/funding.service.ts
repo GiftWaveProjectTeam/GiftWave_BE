@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { Resource } from 'src/entities/Resource.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { JwtService } from '@nestjs/jwt';
 config();
 const configService = new ConfigService();
 
@@ -29,6 +30,8 @@ export class FundingService {
 
     @InjectEntityManager()
     private entityManager: EntityManager,
+
+    private readonly jwtService: JwtService,
   ) {
     // AWS 인증 정보 설정
     this.s3 = new S3({

@@ -6,12 +6,14 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { FundingService } from './funding.service';
 import { CreateFundingDto } from './dto/create-funding.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
+import { AuthGuard } from '@nestjs/passport';
 config();
 const configService = new ConfigService();
 
@@ -21,6 +23,7 @@ export class FundingController {
 
   //펀딩등록
   @Post()
+  @UseGuards(AuthGuard())
   @UseInterceptors(FileInterceptor('Image'))
   async uploadFile(
     @UploadedFile() Image: Express.Multer.File,
