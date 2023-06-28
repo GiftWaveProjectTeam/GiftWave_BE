@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Funding } from 'src/entities/Funding.entity';
-import { Resource } from 'src/entities/Resource.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -43,12 +42,24 @@ celebration : String
         'Funding.finish_date',
         'Funding.product_name',
         'Resource.file_location',
+        'Recipient.name',
       ])
       .leftJoin('Funding.Resource', 'Resource')
+      .leftJoin('Funding.Recipient', 'Recipient')
       .where('Funding.funding_id = :funding_id', { funding_id: funding_id })
       .getOne();
 
-
-    console.log(funding.Resource.file_location);
+    const detail = {
+      fundingId: funding.funding_id,
+      title: funding.title,
+      content: funding.content,
+      imageUrl: funding.Resource.file_location,
+      option: funding.option, //요청사항
+      price: funding.price, //목표금액
+      finishDate: funding.finish_date,
+      productName: funding.product_name,
+      receiveName: funding.Recipient.name,
+    };
+    return detail;
   }
 }
