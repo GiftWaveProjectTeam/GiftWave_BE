@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFundingDto } from './dto/create-funding.dto';
 import { Funding } from 'src/entities/Funding.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -147,5 +147,19 @@ export class FundingService {
     }));
 
     return { user: userPostlist, post: list };
+  }
+
+  async deleteFunding(fundingId: string): Promise<object> {
+    const funding = await this.fundingRepository
+      .createQueryBuilder('Funding')
+      .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
+      .getOne();
+
+    if (!funding) {
+      throw new NotFoundException('해당 게시물을 찾을 수 없습니다.');
+    }
+    await this.fundingRepository.delete(fundingId);
+
+    return { message: '펀딩 삭제가 완료되었습니다.' };
   }
 }

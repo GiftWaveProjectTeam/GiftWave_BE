@@ -6,6 +6,8 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { FundingService } from './funding.service';
 import { CreateFundingDto } from './dto/create-funding.dto';
@@ -48,6 +50,10 @@ export class FundingController {
   }
 
   //펀딩 삭제
+  @Delete('/:id')
+  deleteFunding(@Param('id') fundingId: string) {
+    return this.fundingService.deleteFunding(fundingId);
+  }
 
   //펀딩 수정
 }
