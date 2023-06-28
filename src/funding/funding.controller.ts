@@ -46,4 +46,8 @@ export class FundingController {
   getAllFunding(@Query('user') user: string): Promise<object> {
     return this.fundingService.getAllFunding(user);
   }
+
+  //펀딩 삭제
+
+  //펀딩 수정
 }
