@@ -8,12 +8,14 @@ import {
   Query,
   Delete,
   Param,
+  Patch,
 } from '@nestjs/common';
 import { FundingService } from './funding.service';
 import { CreateFundingDto } from './dto/create-funding.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
+import { UpdateFundingDto } from './dto/update-funding,dto';
 // import { AuthGuard } from '@nestjs/passport';
 config();
 const configService = new ConfigService();
@@ -31,14 +33,17 @@ export class FundingController {
     @Body() createfunding: CreateFundingDto,
   ): Promise<object> {
     //업로드 파일정보
+    console.log(Image);
     const bucketName = configService.get('AWS_BUCKET_NAME');
     const key = Image.originalname;
     const fileData = Image.buffer;
+    const contentType = Image.mimetype;
 
     return this.fundingService.createFunding(
       bucketName,
       key,
       fileData,
+      contentType,
       createfunding,
     );
   }
@@ -55,5 +60,12 @@ export class FundingController {
     return this.fundingService.deleteFunding(fundingId);
   }
 
-  //펀딩 수정
+  //펀딩 수정(배송지 추후 입력)
+  @Patch('/:id')
+  updateFunding(
+    @Param('id') fundingId: string,
+    @Body() updateFunding: UpdateFundingDto,
+  ) {
+    return this.fundingService.updateFunding(fundingId, updateFunding);
+  }
 }

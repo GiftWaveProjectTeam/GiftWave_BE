@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { Resource } from 'src/entities/Resource.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { UpdateFundingDto } from './dto/update-funding,dto';
 config();
 const configService = new ConfigService();
 
@@ -42,6 +43,7 @@ export class FundingService {
     bucketName: string,
     key: string,
     fileData: Buffer,
+    contentType: string,
     createFunding: CreateFundingDto,
   ): Promise<object> {
     const {
@@ -62,6 +64,7 @@ export class FundingService {
       Bucket: bucketName,
       Key: `${uuid}-${key}`,
       Body: fileData,
+      ContentType: contentType,
     };
     const uploadResult = await this.s3.upload(uploadParams).promise();
     console.log(uploadResult);
@@ -161,5 +164,21 @@ export class FundingService {
     await this.fundingRepository.delete(fundingId);
 
     return { message: '펀딩 삭제가 완료되었습니다.' };
+  }
+
+  async updateFunding(
+    fundingId: string,
+    updateFunding: UpdateFundingDto,
+  ): Promise<object> {
+    const funding = await this.fundingRepository
+      .createQueryBuilder('Funding')
+      .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
+      .getOne();
+
+    if (!funding) {
+      throw new NotFoundException('해당 게시물을 찾을 수 없습니다.');
+    }
+
+    return { message: '배송지 입력이 완료되었습니다.' };
   }
 }
