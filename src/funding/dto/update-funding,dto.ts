@@ -1,11 +1,43 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateFundingDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  receiveAddress: string;
+  title?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  receivePhoneNum: string;
+  content?: string;
+
+  @IsOptional()
+  @IsString()
+  option?: string;
+
+  @IsOptional()
+  @IsNumber()
+  price?: bigint;
+
+  @IsOptional()
+  @IsString()
+  url?: string;
+
+  @IsOptional()
+  @IsDate()
+  finishDate?: Date;
+
+  @IsOptional()
+  @IsString()
+  receiveName?: string;
+
+  @IsOptional()
+  @IsString()
+  phoneNum?: string;
+
+  @IsOptional()
+  @IsString()
+  bank?: string;
+
+  @IsOptional()
+  @IsString()
+  accountNum?: string;
 }

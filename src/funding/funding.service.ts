@@ -28,6 +28,9 @@ export class FundingService {
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
 
+    @InjectRepository(Resource)
+    private resourceRepository: Repository<Resource>,
+
     @InjectEntityManager()
     private entityManager: EntityManager,
   ) {
@@ -170,6 +173,7 @@ export class FundingService {
     fundingId: string,
     updateFunding: UpdateFundingDto,
   ): Promise<object> {
+    //해당 게시물 찾기
     const funding = await this.fundingRepository
       .createQueryBuilder('Funding')
       .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
@@ -178,7 +182,60 @@ export class FundingService {
     if (!funding) {
       throw new NotFoundException('해당 게시물을 찾을 수 없습니다.');
     }
+    //각 테이블ID 찾기
+    const recipientId = await this.recipientRepository
+      .createQueryBuilder('Recipient')
+      .leftJoin('Recipient.Funding', 'Funding')
+      .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
+      .select(['Recipient.recipient_id'])
+      .getOne();
+    const accountId = await this.accountRepository
+      .createQueryBuilder('Account')
+      .leftJoin('Account.Recipient', 'Recipient')
+      .where('Recipient.recipient_id = :recipientId', {
+        recipientId: recipientId.recipient_id,
+      })
+      .select(['Account.account_id'])
+      .getOne();
 
-    return { message: '배송지 입력이 완료되었습니다.' };
+    //수정하기
+    const queryRunner = this.entityManager.transaction(
+      async (transactionEntityManager) => {
+        await transactionEntityManager.update(
+          Funding,
+          { funding_id: fundingId },
+          {
+            title: updateFunding.title,
+            content: updateFunding.content,
+            page_url: updateFunding.url,
+            option: updateFunding.option,
+            price: updateFunding.price,
+            finish_date: updateFunding.finishDate,
+          },
+        );
+
+        await transactionEntityManager.update(
+          Recipient,
+          { recipient_id: recipientId.recipient_id },
+          {
+            name: updateFunding.receiveName,
+            phone_number: updateFunding.phoneNum,
+          },
+        );
+
+        await transactionEntityManager.update(
+          Account,
+          { account_id: accountId.account_id },
+          {
+            bank: updateFunding.bank,
+            account: updateFunding.accountNum,
+          },
+        );
+
+        return { message: '펀딩 수정이 완료되었습니다.' };
+      },
+    );
+
+    return queryRunner;
   }
 }
