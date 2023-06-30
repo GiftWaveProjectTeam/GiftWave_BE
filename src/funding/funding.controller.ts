@@ -32,11 +32,13 @@ export class FundingController {
     const bucketName = configService.get('AWS_BUCKET_NAME');
     const key = Image.originalname;
     const fileData = Image.buffer;
+    const contentType = Image.mimetype;
 
     return this.fundingService.createFunding(
       bucketName,
       key,
       fileData,
+      contentType,
       createfunding,
     );
   }

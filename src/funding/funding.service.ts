@@ -42,6 +42,7 @@ export class FundingService {
     bucketName: string,
     key: string,
     fileData: Buffer,
+    contentType: string,
     createFunding: CreateFundingDto,
   ): Promise<object> {
     const {
@@ -62,6 +63,7 @@ export class FundingService {
       Bucket: bucketName,
       Key: `${uuid}-${key}`,
       Body: fileData,
+      ContentType: contentType,
     };
     const uploadResult = await this.s3.upload(uploadParams).promise();
     console.log(uploadResult);
