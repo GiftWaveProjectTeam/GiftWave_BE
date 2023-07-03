@@ -172,30 +172,40 @@ export class FundingService {
   async updateFunding(
     fundingId: string,
     updateFunding: UpdateFundingDto,
-    bucketName,
-    key: string,
-    fileData: Buffer,
-    contentType: string,
+    bucketName: string,
+    key: string | null,
+    fileData: Buffer | null,
+    contentType: string | null,
   ): Promise<object> {
     //해당 게시물 찾기
     const funding = await this.fundingRepository
       .createQueryBuilder('Funding')
+      .leftJoin('Funding.Resource', 'Resource')
       .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
+      .select([
+        'Funding.funding_id',
+        'Resource.file_name',
+        'Resource.file_location',
+      ])
       .getOne();
+    console.log(funding);
 
     if (!funding) {
       throw new NotFoundException('해당 게시물을 찾을 수 없습니다.');
     }
     //s3 업로드
-    const uuid = uuidv4();
-    const uploadParams = {
-      Bucket: bucketName,
-      Key: `${uuid}-${key}`,
-      Body: fileData,
-      ContentType: contentType,
-    };
-    const uploadResult = await this.s3.upload(uploadParams).promise();
-    console.log(uploadResult);
+    let uploadResult;
+    if (fileData !== null) {
+      const uuid = uuidv4();
+      const uploadParams = {
+        Bucket: bucketName,
+        Key: `${uuid}-${key}`,
+        Body: fileData,
+        ContentType: contentType,
+      };
+      uploadResult = await this.s3.upload(uploadParams).promise();
+      console.log(uploadResult);
+    }
 
     //각 테이블ID 찾기
     const recipientId = await this.recipientRepository
@@ -252,15 +262,16 @@ export class FundingService {
             account: updateFunding.accountNum,
           },
         );
-
-        await transactionEntityManager.update(
-          Resource,
-          { resource_id: resourceId.resource_id },
-          {
-            file_name: key,
-            file_location: uploadResult.Location,
-          },
-        );
+        if (uploadResult) {
+          await transactionEntityManager.update(
+            Resource,
+            { resource_id: resourceId.resource_id },
+            {
+              file_name: key,
+              file_location: uploadResult.Location,
+            },
+          );
+        }
 
         return { message: '펀딩 수정이 완료되었습니다.' };
       },
