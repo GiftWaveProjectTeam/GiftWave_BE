@@ -172,6 +172,10 @@ export class FundingService {
   async updateFunding(
     fundingId: string,
     updateFunding: UpdateFundingDto,
+    bucketName,
+    key: string,
+    fileData: Buffer,
+    contentType: string,
   ): Promise<object> {
     //해당 게시물 찾기
     const funding = await this.fundingRepository
@@ -182,6 +186,17 @@ export class FundingService {
     if (!funding) {
       throw new NotFoundException('해당 게시물을 찾을 수 없습니다.');
     }
+    //s3 업로드
+    const uuid = uuidv4();
+    const uploadParams = {
+      Bucket: bucketName,
+      Key: `${uuid}-${key}`,
+      Body: fileData,
+      ContentType: contentType,
+    };
+    const uploadResult = await this.s3.upload(uploadParams).promise();
+    console.log(uploadResult);
+
     //각 테이블ID 찾기
     const recipientId = await this.recipientRepository
       .createQueryBuilder('Recipient')
@@ -196,6 +211,12 @@ export class FundingService {
         recipientId: recipientId.recipient_id,
       })
       .select(['Account.account_id'])
+      .getOne();
+    const resourceId = await this.resourceRepository
+      .createQueryBuilder('Resource')
+      .leftJoin('Resource.Funding', 'Funding')
+      .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
+      .select(['Resource.resource_id'])
       .getOne();
 
     //수정하기
@@ -229,6 +250,15 @@ export class FundingService {
           {
             bank: updateFunding.bank,
             account: updateFunding.accountNum,
+          },
+        );
+
+        await transactionEntityManager.update(
+          Resource,
+          { resource_id: resourceId.resource_id },
+          {
+            file_name: key,
+            file_location: uploadResult.Location,
           },
         );
 

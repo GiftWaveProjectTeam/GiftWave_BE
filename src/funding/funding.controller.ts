@@ -62,10 +62,24 @@ export class FundingController {
 
   //펀딩 수정(배송지 추후 입력)
   @Patch('/:id')
+  @UseInterceptors(FileInterceptor('Image'))
   updateFunding(
     @Param('id') fundingId: string,
+    @UploadedFile() Image: Express.Multer.File,
     @Body() updateFunding: UpdateFundingDto,
   ) {
-    return this.fundingService.updateFunding(fundingId, updateFunding);
+    console.log(Image);
+    const bucketName = configService.get('AWS_BUCKET_NAME');
+    const key = Image.originalname;
+    const fileData = Image.buffer;
+    const contentType = Image.mimetype;
+    return this.fundingService.updateFunding(
+      fundingId,
+      updateFunding,
+      bucketName,
+      key,
+      fileData,
+      contentType,
+    );
   }
 }
