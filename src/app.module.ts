@@ -3,6 +3,7 @@ import { FundingsModule } from './funding/funding.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './config/typeorm.config';
+import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { DetailModule } from './detail/detail.module';
 
@@ -13,6 +14,7 @@ import { DetailModule } from './detail/detail.module';
     }),
     TypeOrmModule.forRoot(typeORMConfig),
     UsersModule,
+    AuthModule,
     FundingsModule,
     DetailModule,
   ],

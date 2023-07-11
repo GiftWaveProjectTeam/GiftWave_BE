@@ -11,7 +11,6 @@ import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { Resource } from 'src/entities/Resource.entity';
 import { v4 as uuidv4 } from 'uuid';
-
 config();
 const configService = new ConfigService();
 
@@ -40,9 +39,11 @@ export class FundingService {
   }
 
   async createFunding(
+    user: object,
     bucketName: string,
     key: string,
     fileData: Buffer,
+    contentType: string,
     createFunding: CreateFundingDto,
   ): Promise<object> {
     const {
@@ -63,6 +64,7 @@ export class FundingService {
       Bucket: bucketName,
       Key: `${uuid}-${key}`,
       Body: fileData,
+      ContentType: contentType,
     };
     const uploadResult = await this.s3.upload(uploadParams).promise();
     console.log(uploadResult);
@@ -78,6 +80,7 @@ export class FundingService {
           option,
           price,
           finish_date: finishDate,
+          Users: user,
         });
 
         const recipient = await transactionEntityManager.save(Recipient, {
@@ -121,10 +124,10 @@ export class FundingService {
       .getMany();
 
     const list = postList.map((item) => ({
-      funding_id: item.funding_id,
+      fundingId: item.funding_id,
       title: item.title,
       price: item.price,
-      file_location: item.Resource ? item.Resource.file_location : null,
+      imageUrl: item.Resource ? item.Resource.file_location : null,
     }));
 
     const userPost = await this.fundingRepository
@@ -141,10 +144,10 @@ export class FundingService {
       .getMany();
 
     const userPostlist = userPost.map((item) => ({
-      funding_id: item.funding_id,
+      fundingId: item.funding_id,
       title: item.title,
       price: item.price,
-      file_location: item.Resource ? item.Resource.file_location : null,
+      imageUrl: item.Resource ? item.Resource.file_location : null,
     }));
 
     return { user: userPostlist, post: list };
