@@ -5,8 +5,8 @@ import {
   Get,
   UseInterceptors,
   UploadedFile,
-  Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { FundingService } from './funding.service';
 import { CreateFundingDto } from './dto/create-funding.dto';
@@ -46,7 +46,9 @@ export class FundingController {
 
   //펀딩 조회
   @Get()
-  getAllFunding(@Query('user') user: string): Promise<object> {
+  getAllFunding(@Req() req): Promise<object> {
+    console.log(req.user);
+    const user = req.user.user_id;
     return this.fundingService.getAllFunding(user);
   }
 }
