@@ -39,6 +39,7 @@ export class FundingService {
   }
 
   async createFunding(
+    user: object,
     bucketName: string,
     key: string,
     fileData: Buffer,
@@ -79,6 +80,7 @@ export class FundingService {
           option,
           price,
           finish_date: finishDate,
+          Users: user,
         });
 
         const recipient = await transactionEntityManager.save(Recipient, {

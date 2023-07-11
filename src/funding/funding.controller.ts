@@ -26,9 +26,11 @@ export class FundingController {
   @Post()
   @UseInterceptors(FileInterceptor('Image'))
   async uploadFile(
+    @Req() req,
     @UploadedFile() Image: Express.Multer.File,
     @Body() createfunding: CreateFundingDto,
   ): Promise<object> {
+    const user = req.user;
     //업로드 파일정보
     const bucketName = configService.get('AWS_BUCKET_NAME');
     const key = Image.originalname;
@@ -36,6 +38,7 @@ export class FundingController {
     const contentType = Image.mimetype;
 
     return this.fundingService.createFunding(
+      user,
       bucketName,
       key,
       fileData,
