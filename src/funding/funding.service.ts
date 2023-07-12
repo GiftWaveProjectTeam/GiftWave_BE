@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateFundingDto } from './dto/create-funding.dto';
 import { Funding } from 'src/entities/Funding.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -43,6 +47,7 @@ export class FundingService {
   }
 
   async createFunding(
+    user: object,
     bucketName: string,
     key: string,
     fileData: Buffer,
@@ -83,6 +88,7 @@ export class FundingService {
           option,
           price,
           finish_date: finishDate,
+          Users: user,
         });
 
         const recipient = await transactionEntityManager.save(Recipient, {
@@ -155,21 +161,27 @@ export class FundingService {
     return { user: userPostlist, post: list };
   }
 
-  async deleteFunding(fundingId: string): Promise<object> {
+  async deleteFunding(user: string, fundingId: string): Promise<object> {
     const funding = await this.fundingRepository
       .createQueryBuilder('Funding')
+      .leftJoin('Funding.Users', 'Users')
       .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
+      .select(['Funding.funding_id', 'Users.user_id'])
       .getOne();
 
     if (!funding) {
       throw new NotFoundException('해당 게시물을 찾을 수 없습니다.');
+    } else if (funding.Users.user_id !== user) {
+      throw new ForbiddenException('게시물에 대한 권한이 없습니다.');
     }
+
     await this.fundingRepository.delete(fundingId);
 
     return { message: '펀딩 삭제가 완료되었습니다.' };
   }
 
   async updateFunding(
+    user: string,
     fundingId: string,
     updateFunding: UpdateFundingDto,
     bucketName: string,
@@ -181,18 +193,22 @@ export class FundingService {
     const funding = await this.fundingRepository
       .createQueryBuilder('Funding')
       .leftJoin('Funding.Resource', 'Resource')
+      .leftJoin('Funding.Users', 'Users')
       .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
       .select([
         'Funding.funding_id',
         'Resource.file_name',
         'Resource.file_location',
+        'Users.user_id',
       ])
       .getOne();
-    console.log(funding);
 
     if (!funding) {
       throw new NotFoundException('해당 게시물을 찾을 수 없습니다.');
+    } else if (funding.Users.user_id !== user) {
+      throw new ForbiddenException('게시물에 대한 권한이 없습니다.');
     }
+
     //s3 업로드
     let uploadResult;
     if (fileData !== null) {

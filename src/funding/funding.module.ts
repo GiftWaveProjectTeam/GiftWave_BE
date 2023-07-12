@@ -6,10 +6,14 @@ import { Funding } from 'src/entities/Funding.entity';
 import { Recipient } from 'src/entities/Recipient.entity';
 import { Account } from 'src/entities/Account.entity';
 import { Resource } from 'src/entities/Resource.entity';
+import { JwtStrategy } from './../auth/jwt/jwt.strategy';
+import { Users } from 'src/entities/Users.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Funding, Recipient, Account, Resource])],
+  imports: [
+    TypeOrmModule.forFeature([Funding, Recipient, Account, Users, Resource]),
+  ],
   controllers: [FundingController],
-  providers: [FundingService],
+  providers: [FundingService, JwtStrategy],
 })
 export class FundingsModule {}
