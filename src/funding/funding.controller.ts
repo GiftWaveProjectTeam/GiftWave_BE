@@ -7,6 +7,7 @@ import {
   UploadedFile,
   UseGuards,
   Req,
+  BadRequestException,
 } from '@nestjs/common';
 import { FundingService } from './funding.service';
 import { CreateFundingDto } from './dto/create-funding.dto';
@@ -32,6 +33,9 @@ export class FundingController {
   ): Promise<object> {
     const user = req.user;
     //업로드 파일정보
+    if (!Image) {
+      throw new BadRequestException('이미지를 등록해주세요');
+    }
     const bucketName = configService.get('AWS_BUCKET_NAME');
     const key = Image.originalname;
     const fileData = Image.buffer;
