@@ -15,6 +15,7 @@ import { FundingLike } from './FundingLike.entity';
 import { Celebration } from './Celebration.entity';
 import { Payment } from './Payment.entity';
 import { Recipient } from './Recipient.entity';
+import { Resource } from './Resource.entity';
 
 @Entity({ name: 'Funding' })
 export class Funding {
@@ -30,7 +31,7 @@ export class Funding {
   @Column({ type: 'varchar', nullable: false })
   page_url: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: true })
   product_name: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -39,11 +40,11 @@ export class Funding {
   @Column({ type: 'bigint', nullable: false })
   price: bigint;
 
-    @Column({type: 'timestamptz', nullable: false})
-    finish_date: Date
+  @Column({ type: 'timestamptz', nullable: false })
+  finish_date: Date;
 
-  @Column({ type: 'boolean', nullable: false })
-  perchase: true;
+  @Column({ type: 'boolean', nullable: true })
+  perchase: false;
 
   @CreateDateColumn({ type: 'timestamptz', nullable: false })
   created_at: Date;
@@ -85,4 +86,12 @@ export class Funding {
     onDelete: 'CASCADE',
   })
   Recipient: Recipient;
+
+  // * Funding | 1 : 1 | Resource
+  @OneToOne(() => Resource, (resource) => resource.Funding, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  Resource: Resource;
+  file_location: any;
 }

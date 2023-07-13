@@ -1,9 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { config } from 'dotenv';
-
 config();
-
 const configService = new ConfigService();
 
 export const typeORMConfig: TypeOrmModuleOptions = {
@@ -14,7 +12,8 @@ export const typeORMConfig: TypeOrmModuleOptions = {
   password: configService.get<string>('TYPEORM_PASSWORD'),
   database: configService.get<string>('TYPEORM_DATABASE'),
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
-  migrations: ['src/migrations/*.ts'],
-  migrationsTableName: 'migrations',
+  // migrations: ['src/migrations/*.ts'],
+  // migrationsTableName: 'migrations',
   synchronize: true,
+  logging: true,
 };
