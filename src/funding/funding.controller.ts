@@ -7,6 +7,9 @@ import {
   UploadedFile,
   UseGuards,
   Req,
+  Delete,
+  Param,
+  Patch,
   BadRequestException,
 } from '@nestjs/common';
 import { FundingService } from './funding.service';
@@ -14,6 +17,7 @@ import { CreateFundingDto } from './dto/create-funding.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
+import { UpdateFundingDto } from './dto/update-funding,dto';
 import { AuthGuard } from '@nestjs/passport';
 config();
 const configService = new ConfigService();
@@ -33,6 +37,7 @@ export class FundingController {
   ): Promise<object> {
     const user = req.user;
     //업로드 파일정보
+    console.log(Image);
     if (!Image) {
       throw new BadRequestException('이미지를 등록해주세요');
     }
@@ -57,5 +62,44 @@ export class FundingController {
     console.log(req.user);
     const user = req.user.user_id;
     return this.fundingService.getAllFunding(user);
+  }
+
+  //펀딩 삭제
+  @Delete('/:id')
+  deleteFunding(@Req() req, @Param('id') fundingId: string) {
+    const user = req.user.user_id;
+    return this.fundingService.deleteFunding(user, fundingId);
+  }
+
+  //펀딩 수정(배송지 추후 입력)
+  @Patch('/:id')
+  @UseInterceptors(FileInterceptor('Image'))
+  updateFunding(
+    @Req() req,
+    @Param('id') fundingId: string,
+    @UploadedFile() Image: Express.Multer.File,
+    @Body() updateFunding: UpdateFundingDto,
+  ) {
+    const user = req.user.user_id;
+    console.log(Image);
+    let key = null;
+    let fileData = null;
+    let contentType = null;
+    if (Image) {
+      key = Image.originalname;
+      fileData = Image.buffer;
+      contentType = Image.mimetype;
+    }
+    const bucketName = configService.get('AWS_BUCKET_NAME');
+
+    return this.fundingService.updateFunding(
+      user,
+      fundingId,
+      updateFunding,
+      bucketName,
+      key,
+      fileData,
+      contentType,
+    );
   }
 }

@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateFundingDto } from './dto/create-funding.dto';
 import { Funding } from 'src/entities/Funding.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +15,7 @@ import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { Resource } from 'src/entities/Resource.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { UpdateFundingDto } from './dto/update-funding,dto';
 config();
 const configService = new ConfigService();
 
@@ -26,6 +31,9 @@ export class FundingService {
 
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
+
+    @InjectRepository(Resource)
+    private resourceRepository: Repository<Resource>,
 
     @InjectEntityManager()
     private entityManager: EntityManager,
@@ -151,5 +159,140 @@ export class FundingService {
     }));
 
     return { user: userPostlist, post: list };
+  }
+
+  async deleteFunding(user: string, fundingId: string): Promise<object> {
+    const funding = await this.fundingRepository
+      .createQueryBuilder('Funding')
+      .leftJoin('Funding.Users', 'Users')
+      .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
+      .select(['Funding.funding_id', 'Users.user_id'])
+      .getOne();
+
+    if (!funding) {
+      throw new NotFoundException('해당 게시물을 찾을 수 없습니다.');
+    } else if (funding.Users.user_id !== user) {
+      throw new ForbiddenException('게시물에 대한 권한이 없습니다.');
+    }
+
+    await this.fundingRepository.delete(fundingId);
+
+    return { message: '펀딩 삭제가 완료되었습니다.' };
+  }
+
+  async updateFunding(
+    user: string,
+    fundingId: string,
+    updateFunding: UpdateFundingDto,
+    bucketName: string,
+    key: string | null,
+    fileData: Buffer | null,
+    contentType: string | null,
+  ): Promise<object> {
+    //해당 게시물 찾기
+    const funding = await this.fundingRepository
+      .createQueryBuilder('Funding')
+      .leftJoin('Funding.Resource', 'Resource')
+      .leftJoin('Funding.Users', 'Users')
+      .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
+      .select([
+        'Funding.funding_id',
+        'Resource.file_name',
+        'Resource.file_location',
+        'Users.user_id',
+      ])
+      .getOne();
+
+    if (!funding) {
+      throw new NotFoundException('해당 게시물을 찾을 수 없습니다.');
+    } else if (funding.Users.user_id !== user) {
+      throw new ForbiddenException('게시물에 대한 권한이 없습니다.');
+    }
+
+    //s3 업로드
+    let uploadResult;
+    if (fileData !== null) {
+      const uuid = uuidv4();
+      const uploadParams = {
+        Bucket: bucketName,
+        Key: `${uuid}-${key}`,
+        Body: fileData,
+        ContentType: contentType,
+      };
+      uploadResult = await this.s3.upload(uploadParams).promise();
+      console.log(uploadResult);
+    }
+
+    //각 테이블ID 찾기
+    const recipientId = await this.recipientRepository
+      .createQueryBuilder('Recipient')
+      .leftJoin('Recipient.Funding', 'Funding')
+      .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
+      .select(['Recipient.recipient_id'])
+      .getOne();
+    const accountId = await this.accountRepository
+      .createQueryBuilder('Account')
+      .leftJoin('Account.Recipient', 'Recipient')
+      .where('Recipient.recipient_id = :recipientId', {
+        recipientId: recipientId.recipient_id,
+      })
+      .select(['Account.account_id'])
+      .getOne();
+    const resourceId = await this.resourceRepository
+      .createQueryBuilder('Resource')
+      .leftJoin('Resource.Funding', 'Funding')
+      .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
+      .select(['Resource.resource_id'])
+      .getOne();
+
+    //수정하기
+    const queryRunner = this.entityManager.transaction(
+      async (transactionEntityManager) => {
+        await transactionEntityManager.update(
+          Funding,
+          { funding_id: fundingId },
+          {
+            title: updateFunding.title,
+            content: updateFunding.content,
+            page_url: updateFunding.url,
+            option: updateFunding.option,
+            price: updateFunding.price,
+            finish_date: updateFunding.finishDate,
+          },
+        );
+
+        await transactionEntityManager.update(
+          Recipient,
+          { recipient_id: recipientId.recipient_id },
+          {
+            name: updateFunding.receiveName,
+            phone_number: updateFunding.phoneNum,
+          },
+        );
+
+        await transactionEntityManager.update(
+          Account,
+          { account_id: accountId.account_id },
+          {
+            bank: updateFunding.bank,
+            account: updateFunding.accountNum,
+          },
+        );
+        if (uploadResult) {
+          await transactionEntityManager.update(
+            Resource,
+            { resource_id: resourceId.resource_id },
+            {
+              file_name: key,
+              file_location: uploadResult.Location,
+            },
+          );
+        }
+
+        return { message: '펀딩 수정이 완료되었습니다.' };
+      },
+    );
+
+    return queryRunner;
   }
 }
