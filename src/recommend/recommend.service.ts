@@ -47,8 +47,9 @@ export class RecommendService {
               if (imgElement instanceof HTMLImageElement && imgElement.src) {
                 const img = imgElement.src;
                 const data = img.split(',')[1];
+                const ContentType = img.split(';')[0].split(':')[1];
                 // const fileData = Buffer.from(data, 'base64');
-                tempImgList.push(data);
+                tempImgList.push(data, ContentType);
               }
             },
           );
@@ -63,6 +64,7 @@ export class RecommendService {
             price: z.querySelector('.imageProduct_price__W6pU1 > strong')
               ?.textContent,
             img: tempImgList[0],
+            ContentType: tempImgList[1],
           };
 
           propertyList.push(data);
@@ -79,13 +81,13 @@ export class RecommendService {
       resultlist.map(async (item) => {
         const fileData = Buffer.from(item.img, 'base64');
         const bucketName = 'giftwave-s3-bucket';
-
+        const type = item.ContentType;
         const uuid = uuidv4();
         const uploadParams = {
           Bucket: bucketName,
           Key: `${uuid}`,
           Body: fileData,
-          ContentType: 'image/jpeg',
+          ContentType: type,
         };
         const uploadResult = await this.s3.upload(uploadParams).promise();
         return {
