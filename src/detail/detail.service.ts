@@ -65,7 +65,6 @@ celebration : String
         'Funding.funding_id',
         'Funding.title',
         'Funding.content',
-        'Funding.option',
         'Funding.price',
         'Funding.finish_date',
         'Funding.product_name',
@@ -77,16 +76,45 @@ celebration : String
       .where('Funding.funding_id = :funding_id', { funding_id: funding_id })
       .getOne();
 
+    const payment = await this.paymentRepository
+      .createQueryBuilder('Payment')
+      .select(['Payment.payment_id', 'Payment.gift_price'])
+      .leftJoin('Payment.Funding', 'Funding')
+      .where('Payment.funding_id = :funding_id', { funding_id: funding_id })
+      .getMany();
+    //전체 모인 금액 퍼센트 산출하기
+    let paymentSum = 0;
+    payment.map((item) => {
+      if (typeof item.gift_price === 'string') {
+        paymentSum += Number(item.gift_price);
+      } else {
+        paymentSum += 0;
+      }
+    });
+    const percent = Math.ceil(paymentSum / Number(funding.price)) * 100;
+
+    const celebration = await this.celebrationRepository
+      .createQueryBuilder('Celebration')
+      .select([
+        'Celebration.funding_msg',
+        'Celebration.funding_nickname',
+        'Celebration.file_location',
+      ])
+      .leftJoin('Celebration.Funding', 'Funding')
+      .where('Celebration.funding_id = :funding_id', { funding_id: funding_id })
+      .getMany();
+
     const detail = {
       fundingId: funding.funding_id,
       title: funding.title,
       content: funding.content,
       imageUrl: funding.Resource.file_location,
-      option: funding.option, //요청사항
       price: funding.price, //목표금액
+      percent: percent,
       finishDate: funding.finish_date,
       productName: funding.product_name,
       receiveName: funding.Recipient.name,
+      celebrateMsg: celebration,
     };
     return detail;
   }
