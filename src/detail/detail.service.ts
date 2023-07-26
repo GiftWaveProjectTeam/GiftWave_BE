@@ -38,26 +38,6 @@ export class DetailService {
     });
   }
 
-  /**
- * {
-id : Number
-title : String
-content : String
-imageUrl : String
-option : String    //요청사항
-price : Number    //목표금액
-percent : Number
-finishDate : Date
-productName : String
-receiveName : String
-celebrateMsg : [   → 정렬 방식 정해야함
-{
-nickName : String
-celebration : String
-}, …
-]
-}
- */
   async getDetailById(funding_id: string) {
     const funding = await this.fundingRepository
       .createQueryBuilder('Funding')
@@ -137,9 +117,6 @@ celebration : String
       .where('Users.user_id = :user_id', { user_id: user })
       .getOne();
 
-    //축하메세지랑 페이먼트 따로 저장
-    //축하메세지에 이미지 있을 때 이미지 저장
-
     await this.paymentRepository.save({
       gift_price: payment,
       payment_check: false,
@@ -162,6 +139,7 @@ celebration : String
         ContentType: contentType,
       };
       uploadResult = await this.s3.upload(uploadParams).promise();
+      console.log(typeof uploadResult);
     }
 
     if (celebration) {
