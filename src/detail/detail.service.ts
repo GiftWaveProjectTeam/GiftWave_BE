@@ -71,7 +71,7 @@ export class DetailService {
         paymentSum += 0;
       }
     });
-    const percent = Math.ceil(paymentSum / Number(funding.price)) * 100;
+    const percent = Math.ceil((paymentSum / Number(funding.price)) * 100);
 
     const celebration = await this.celebrationRepository
       .createQueryBuilder('Celebration')
