@@ -22,6 +22,9 @@ export class Celebration {
   @Column({ type: 'varchar', nullable: true })
   funding_nickname: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  file_location: string;
+
   @CreateDateColumn({ type: 'timestamptz', nullable: false })
   created_at: Date;
 
