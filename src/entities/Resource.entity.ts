@@ -4,20 +4,28 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Users } from './Users.entity';
 import { Funding } from './Funding.entity';
 
-@Entity({ name: 'FundingLike' })
-export class FundingLike {
+@Entity({ name: 'Resource' })
+export class Resource {
   @PrimaryGeneratedColumn('uuid')
-  like_id: UUID;
+  resource_id: UUID;
 
-  @Column({ type: 'boolean', nullable: true })
-  funding_like: true;
+  @Column({ type: 'varchar', nullable: false })
+  resource_type: string;
+
+  @Column({ type: 'varchar', nullable: false })
+  file_name: string;
+
+  @Column({ type: 'varchar', nullable: false })
+  file_location: string;
+
+  @Column({ type: 'integer', nullable: true })
+  resource_order: number;
 
   @CreateDateColumn({ type: 'timestamptz', nullable: false })
   created_at: Date;
@@ -25,15 +33,8 @@ export class FundingLike {
   @UpdateDateColumn({ type: 'timestamptz', nullable: false })
   updated_at: Date;
 
-  // * Users | M : 1 | Users
-  @ManyToOne(() => Users, (users) => users.FundingLike, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn([{ name: 'user_id', referencedColumnName: 'user_id' }])
-  Users: Users;
-
-  // * Users | M : 1 | Funding
-  @ManyToOne(() => Funding, (users) => users.FundingLike, {
+  // * Users | 1 : 1 | Funding
+  @OneToOne(() => Funding, (funding) => funding.Resource, {
     onDelete: 'CASCADE',
   })
   @JoinColumn([{ name: 'funding_id', referencedColumnName: 'funding_id' }])
