@@ -62,6 +62,7 @@ export class FundingService {
       phoneNum,
       bank,
       accountNum,
+      accountHolder,
     } = createFunding;
 
     //업로드 파일정보 확인
@@ -108,6 +109,7 @@ export class FundingService {
         await transactionEntityManager.save(Account, {
           bank,
           account: accountNum,
+          account_holder: accountHolder,
           Recipient: recipient,
         });
         //이미지가 있을 경우 이미지 정보 db 저장
@@ -299,6 +301,7 @@ export class FundingService {
           {
             bank: updateFunding.bank,
             account: updateFunding.accountNum,
+            account_holder: updateFunding.accountHolder,
           },
         );
         if (uploadResult) {
