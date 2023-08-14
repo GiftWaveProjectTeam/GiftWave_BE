@@ -81,25 +81,12 @@ export class FundingController {
     @Body() updateFunding: UpdateFundingDto,
   ) {
     const user = req.user.user_id;
-    console.log(Image);
-    let key = null;
-    let fileData = null;
-    let contentType = null;
-    if (Image) {
-      key = Image.originalname;
-      fileData = Image.buffer;
-      contentType = Image.mimetype;
-    }
-    const bucketName = configService.get('AWS_BUCKET_NAME');
 
     return this.fundingService.updateFunding(
       user,
       fundingId,
       updateFunding,
-      bucketName,
-      key,
-      fileData,
-      contentType,
+      Image,
     );
   }
 }

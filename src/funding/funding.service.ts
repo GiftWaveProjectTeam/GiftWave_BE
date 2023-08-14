@@ -184,10 +184,7 @@ export class FundingService {
     user: string,
     fundingId: string,
     updateFunding: UpdateFundingDto,
-    bucketName: string,
-    key: string | null,
-    fileData: Buffer | null,
-    contentType: string | null,
+    Image: Express.Multer.File,
   ): Promise<object> {
     //해당 게시물 찾기
     const funding = await this.fundingRepository
@@ -209,20 +206,6 @@ export class FundingService {
       throw new ForbiddenException('게시물에 대한 권한이 없습니다.');
     }
 
-    //s3 업로드
-    let uploadResult;
-    if (fileData !== null) {
-      const uuid = uuidv4();
-      const uploadParams = {
-        Bucket: bucketName,
-        Key: `${uuid}-${key}`,
-        Body: fileData,
-        ContentType: contentType,
-      };
-      uploadResult = await this.s3.upload(uploadParams).promise();
-      console.log(uploadResult);
-    }
-
     //각 테이블ID 찾기
     const recipientId = await this.recipientRepository
       .createQueryBuilder('Recipient')
@@ -242,9 +225,39 @@ export class FundingService {
       .createQueryBuilder('Resource')
       .leftJoin('Resource.Funding', 'Funding')
       .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
-      .select(['Resource.resource_id'])
+      .select([
+        'Resource.resource_id',
+        'Resource.file_name',
+        'Resource.file_location',
+      ])
       .getOne();
 
+    //이미지확인
+    let uploadResult;
+    let key: string;
+    console.log(Image);
+    if (Image) {
+      key = Image.originalname;
+      const fileData = Image.buffer;
+      const contentType = Image.mimetype;
+      const bucketName = configService.get('AWS_BUCKET_NAME');
+
+      //s3 업로드
+      const uuid = uuidv4();
+      const uploadParams = {
+        Bucket: bucketName,
+        Key: `${uuid}-${key}`,
+        Body: fileData,
+        ContentType: contentType,
+      };
+      uploadResult = await this.s3.upload(uploadParams).promise();
+      console.log(uploadResult);
+    } else {
+      uploadResult = {
+        Location: resourceId.file_location,
+      };
+      key = resourceId.file_name;
+    }
     //수정하기
     const queryRunner = this.entityManager.transaction(
       async (transactionEntityManager) => {
