@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { S3 } from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
+import { userDto } from 'src/detail/dto/user.dto';
 
 config();
 const configService = new ConfigService();
@@ -102,7 +103,7 @@ export class DetailService {
   //펀딩참여하기
   async participantFunding(
     funding: participantFundingDto,
-    user: string,
+    user: userDto,
     funding_id: string,
     Image: Express.Multer.File,
   ) {
@@ -112,16 +113,16 @@ export class DetailService {
       .where('Funding.funding_id = :funding_id', { funding_id: funding_id })
       .getOne();
 
-    const fundinguser = await this.userRepository
-      .createQueryBuilder('Users')
-      .where('Users.user_id = :user_id', { user_id: user })
-      .getOne();
+    // const fundinguser = await this.userRepository
+    //   .createQueryBuilder('Users')
+    //   .where('Users.user_id = :user_id', { user_id: user.user_id })
+    //   .getOne();
 
     await this.paymentRepository.save({
       gift_price: payment,
       payment_check: false,
       Funding: fundingpost,
-      Users: fundinguser,
+      Users: user,
     });
     let uploadResult;
     if (Image) {
@@ -150,10 +151,10 @@ export class DetailService {
       }
       await this.celebrationRepository.save({
         funding_msg: celebration,
-        funding_nickname: fundinguser.nickname,
+        funding_nickname: user.nickname,
         file_location: uploadResult.Location,
         Funding: fundingpost,
-        Users: fundinguser,
+        Users: user,
       });
     }
 

@@ -19,7 +19,7 @@ export class DetailController {
   constructor(private readonly detailService: DetailService) {}
 
   @Get('/:id')
-  getDetailById(@Param('id') funding_id: string) {
+  getDetailById(@Param('id') funding_id: string): Promise<object> {
     return this.detailService.getDetailById(funding_id);
   }
 
@@ -31,8 +31,8 @@ export class DetailController {
     @Param('id') funding_id: string,
     @Body() funding: participantFundingDto,
     @UploadedFile() Image: Express.Multer.File,
-  ) {
-    const user = req.user.user_id;
+  ): Promise<object> {
+    const user = req.user;
     return this.detailService.participantFunding(
       funding,
       user,
