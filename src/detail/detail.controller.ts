@@ -47,7 +47,7 @@ export class DetailController {
   @Post('/:id/like')
   @UseGuards(AuthGuard('jwt'))
   likeFunding(@Param('id') funding_id: string, @Req() req) {
-    const user = req.user.user_id;
+    const user = req.user;
     console.log(req.user);
     return this.detailService.likeFunding(funding_id, user);
   }
