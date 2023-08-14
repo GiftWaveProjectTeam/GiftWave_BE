@@ -89,11 +89,10 @@ export class DetailService {
       fundingId: funding.funding_id,
       title: funding.title,
       content: funding.content,
-      imageUrl: funding.Resource.file_location,
+      imageUrl: funding.Resource ? funding.Resource.file_location : undefined,
       price: funding.price, //목표금액
       percent: percent,
       finishDate: funding.finish_date,
-      productName: funding.product_name,
       receiveName: funding.Recipient.name,
       celebrateMsg: celebration,
     };
