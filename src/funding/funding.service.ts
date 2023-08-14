@@ -48,10 +48,7 @@ export class FundingService {
 
   async createFunding(
     user: object,
-    bucketName: string,
-    key: string,
-    fileData: Buffer,
-    contentType: string,
+    Image: Express.Multer.File,
     createFunding: CreateFundingDto,
   ): Promise<object> {
     const {
@@ -65,17 +62,29 @@ export class FundingService {
       phoneNum,
       bank,
       accountNum,
+      accountHolder,
     } = createFunding;
-    //s3 업로드
-    const uuid = uuidv4();
-    const uploadParams = {
-      Bucket: bucketName,
-      Key: `${uuid}-${key}`,
-      Body: fileData,
-      ContentType: contentType,
-    };
-    const uploadResult = await this.s3.upload(uploadParams).promise();
-    console.log(uploadResult);
+
+    //업로드 파일정보 확인
+    console.log(Image);
+    let uploadResult;
+    let key: string;
+    if (Image) {
+      const bucketName = configService.get('AWS_BUCKET_NAME');
+      key = Image.originalname;
+      const fileData = Image.buffer;
+      const contentType = Image.mimetype;
+      //s3 업로드
+      const uuid = uuidv4();
+      const uploadParams = {
+        Bucket: bucketName,
+        Key: `${uuid}-${key}`,
+        Body: fileData,
+        ContentType: contentType,
+      };
+      uploadResult = await this.s3.upload(uploadParams).promise();
+      console.log(uploadResult);
+    }
 
     //트랜잭션 적용
     const queryRunner = this.entityManager.transaction(
@@ -100,16 +109,19 @@ export class FundingService {
         await transactionEntityManager.save(Account, {
           bank,
           account: accountNum,
+          account_holder: accountHolder,
           Recipient: recipient,
         });
-        //이미지 정보 db 저장
-        await transactionEntityManager.save(Resource, {
-          resource_type: 'RT01',
-          file_name: key,
-          file_location: uploadResult.Location,
-          resource_order: 1,
-          Funding: funding,
-        });
+        //이미지가 있을 경우 이미지 정보 db 저장
+        if (Image) {
+          await transactionEntityManager.save(Resource, {
+            resource_type: 'RT01',
+            file_name: key,
+            file_location: uploadResult.Location,
+            resource_order: 1,
+            Funding: funding,
+          });
+        }
 
         return { message: '펀딩 등록이 완료되었습니다.' };
       },
@@ -184,10 +196,7 @@ export class FundingService {
     user: string,
     fundingId: string,
     updateFunding: UpdateFundingDto,
-    bucketName: string,
-    key: string | null,
-    fileData: Buffer | null,
-    contentType: string | null,
+    Image: Express.Multer.File,
   ): Promise<object> {
     //해당 게시물 찾기
     const funding = await this.fundingRepository
@@ -209,20 +218,6 @@ export class FundingService {
       throw new ForbiddenException('게시물에 대한 권한이 없습니다.');
     }
 
-    //s3 업로드
-    let uploadResult;
-    if (fileData !== null) {
-      const uuid = uuidv4();
-      const uploadParams = {
-        Bucket: bucketName,
-        Key: `${uuid}-${key}`,
-        Body: fileData,
-        ContentType: contentType,
-      };
-      uploadResult = await this.s3.upload(uploadParams).promise();
-      console.log(uploadResult);
-    }
-
     //각 테이블ID 찾기
     const recipientId = await this.recipientRepository
       .createQueryBuilder('Recipient')
@@ -242,9 +237,39 @@ export class FundingService {
       .createQueryBuilder('Resource')
       .leftJoin('Resource.Funding', 'Funding')
       .where('Funding.funding_id = :fundingId', { fundingId: fundingId })
-      .select(['Resource.resource_id'])
+      .select([
+        'Resource.resource_id',
+        'Resource.file_name',
+        'Resource.file_location',
+      ])
       .getOne();
 
+    //이미지확인
+    let uploadResult;
+    let key: string;
+    console.log(Image);
+    if (Image) {
+      key = Image.originalname;
+      const fileData = Image.buffer;
+      const contentType = Image.mimetype;
+      const bucketName = configService.get('AWS_BUCKET_NAME');
+
+      //s3 업로드
+      const uuid = uuidv4();
+      const uploadParams = {
+        Bucket: bucketName,
+        Key: `${uuid}-${key}`,
+        Body: fileData,
+        ContentType: contentType,
+      };
+      uploadResult = await this.s3.upload(uploadParams).promise();
+      console.log(uploadResult);
+    } else {
+      uploadResult = {
+        Location: resourceId.file_location,
+      };
+      key = resourceId.file_name;
+    }
     //수정하기
     const queryRunner = this.entityManager.transaction(
       async (transactionEntityManager) => {
@@ -276,17 +301,30 @@ export class FundingService {
           {
             bank: updateFunding.bank,
             account: updateFunding.accountNum,
+            account_holder: updateFunding.accountHolder,
           },
         );
         if (uploadResult) {
-          await transactionEntityManager.update(
-            Resource,
-            { resource_id: resourceId.resource_id },
-            {
+          //등록되어 있는 이미지가 없을 경우 새로 생성
+          if (!resourceId) {
+            await transactionEntityManager.save(Resource, {
+              resource_type: 'RT01',
               file_name: key,
               file_location: uploadResult.Location,
-            },
-          );
+              resource_order: 1,
+              Funding: funding,
+            });
+          } else {
+            //등록되어 있는 이미지가 이미 있을 경우 업데이트
+            await transactionEntityManager.update(
+              Resource,
+              { resource_id: resourceId.resource_id },
+              {
+                file_name: key,
+                file_location: uploadResult.Location,
+              },
+            );
+          }
         }
 
         return { message: '펀딩 수정이 완료되었습니다.' };
