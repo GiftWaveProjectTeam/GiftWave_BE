@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { S3 } from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
-import { userDto } from 'src/detail/dto/user.dto';
+import { uploadDto, userDto } from 'src/detail/dto/user.dto';
 
 config();
 const configService = new ConfigService();
@@ -124,7 +124,7 @@ export class DetailService {
       Funding: fundingpost,
       Users: user,
     });
-    let uploadResult;
+    let uploadResult: uploadDto;
     if (Image) {
       const bucketName = configService.get('AWS_BUCKET_NAME');
       const key = Image.originalname;

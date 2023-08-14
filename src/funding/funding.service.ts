@@ -16,6 +16,7 @@ import { config } from 'dotenv';
 import { Resource } from 'src/entities/Resource.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateFundingDto } from './dto/update-funding,dto';
+import { uploadDto } from 'src/detail/dto/user.dto';
 config();
 const configService = new ConfigService();
 
@@ -67,7 +68,7 @@ export class FundingService {
 
     //업로드 파일정보 확인
     console.log(Image);
-    let uploadResult;
+    let uploadResult: uploadDto;
     let key: string;
     if (Image) {
       const bucketName = configService.get('AWS_BUCKET_NAME');
@@ -245,7 +246,7 @@ export class FundingService {
       .getOne();
 
     //이미지확인
-    let uploadResult;
+    let uploadResult: uploadDto;
     let key: string;
     console.log(Image);
     if (Image) {
@@ -264,11 +265,6 @@ export class FundingService {
       };
       uploadResult = await this.s3.upload(uploadParams).promise();
       console.log(uploadResult);
-    } else {
-      uploadResult = {
-        Location: resourceId.file_location,
-      };
-      key = resourceId.file_name;
     }
     //수정하기
     const queryRunner = this.entityManager.transaction(

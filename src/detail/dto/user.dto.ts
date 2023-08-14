@@ -15,3 +15,13 @@ export interface userDto {
   created_at: Date;
   updated_at: Date;
 }
+
+export interface uploadDto {
+  ETag?: string;
+  ServerSideEncryption?: string;
+  VersionId?: string;
+  Location: string;
+  key?: string;
+  Key?: string;
+  Bucket?: string;
+}
