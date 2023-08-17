@@ -16,6 +16,9 @@ jobs:
 # @@ 작업이 실행될 운영 체제를 최신 버전의 Ubuntu로 설정
     runs-on: ubuntu-latest
     steps:
+    # @@ actions/checkout@v3 액션을 사용하여 소스 코드를 체크아웃
+    - name : checkout source code
+      uses: actions/checkout@v3
     # @@ .env 파일을 생성하고, 저장소 시크릿으로부터 값을 가져와 해당 파일에 쓰기 작업을 수행
     - name: create env file
       working-directory: ./
@@ -32,10 +35,6 @@ jobs:
         ${{ secrets.docker }}
         EOF
         
-    # @@ actions/checkout@v3 액션을 사용하여 소스 코드를 체크아웃
-    - name : checkout source code
-      uses: actions/checkout@v3
-
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
@@ -60,7 +59,6 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: 22
         script: |
-          cd project_dir
           docker system prune -a --volumes -f
           docker compose pull -q
           docker compose up --force-recreate --build -d --quiet-pull 2>log.out
