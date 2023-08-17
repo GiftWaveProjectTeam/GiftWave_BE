@@ -50,6 +50,12 @@ jobs:
         context: .
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
+
+    - name: Deploy using Docker Compose
+      uses: docker/compose-action@v2
+      with:
+        compose-file: docker-compose.yml
+        compose-args: up -d
         
     - name: ssh connect & production
       uses: appleboy/ssh-action@master
