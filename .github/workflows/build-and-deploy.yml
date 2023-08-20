@@ -11,7 +11,7 @@ on:
 
 # @@ deploy라는 이름의 작업(job)을 정의
 jobs:
-  deploy:
+  build-and-deploy:
 
 # @@ 작업이 실행될 운영 체제를 최신 버전의 Ubuntu로 설정
     runs-on: ubuntu-latest
@@ -51,22 +51,24 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
 
-    - name: Deploy using Docker Compose
-      uses: docker/compose-action@v2
-      with:
-        compose-file: docker-compose.yml
-        compose-args: up -d
+    # - name: Deploy using Docker Compose
+    #   uses: docker/compose-action@v2
+    #   with:
+    #     compose-file: docker-compose.yml
+    #     compose-args: up -d
         
     - name: ssh connect & production
       uses: appleboy/ssh-action@master
+      env:
+        COMPOSE: "./docker-compose.yaml"
       with:
         host: ${{ secrets.HOST }}
         username: ubuntu
         password: ${{ secrets.PASSWORD }}
         port: 22
         script: |
-          docker system prune -a --volumes -f
-          docker compose pull -q
-          docker compose up --force-recreate --build -d --quiet-pull 2>log.out
-          cat log.out
+          sudo docker system prune -a --volumes -f
+          sudo docker-compose -f $COMPOSE down --rmi all
+          sudo docker compose pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
+          sudo docker compose up -f $COMPOSE up -d
 
