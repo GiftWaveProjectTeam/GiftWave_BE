@@ -21,6 +21,9 @@ export class Account {
   @Column({ type: 'varchar', nullable: false })
   account: string;
 
+  @Column({ type: 'varchar', nullable: true }) //나중에 false로 변경해야함
+  account_holder: string;
+
   @CreateDateColumn({ type: 'timestamptz', nullable: false })
   created_at: Date;
 
