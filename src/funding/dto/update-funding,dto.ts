@@ -40,4 +40,8 @@ export class UpdateFundingDto {
   @IsOptional()
   @IsString()
   accountNum?: string;
+
+  @IsOptional()
+  @IsString()
+  accountHolder?: string;
 }

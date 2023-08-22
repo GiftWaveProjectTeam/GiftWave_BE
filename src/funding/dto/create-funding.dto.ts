@@ -46,4 +46,8 @@ export class CreateFundingDto {
   @IsOptional()
   @IsString()
   accountNum: string;
+
+  @IsOptional()
+  @IsString()
+  accountHolder: string;
 }
