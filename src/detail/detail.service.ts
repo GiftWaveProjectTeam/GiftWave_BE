@@ -10,7 +10,9 @@ import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { S3 } from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
+import { FundingLike } from 'src/entities/FundingLike.entity';
 import { uploadDto, userDto } from 'src/detail/dto/user.dto';
+
 
 config();
 const configService = new ConfigService();
@@ -30,6 +32,9 @@ export class DetailService {
 
     @InjectRepository(Celebration)
     private celebrationRepository: Repository<Celebration>,
+
+    @InjectRepository(FundingLike)
+    private fundingLikeRepository: Repository<FundingLike>,
   ) {
     // AWS 인증 정보 설정
     this.s3 = new S3({
@@ -158,5 +163,20 @@ export class DetailService {
     }
 
     return { message: '펀딩에 성공적으로 참여하였습니다.' };
+  }
+
+  //관심등록하기
+  async likeFunding(funding_id: string, user: object) {
+    const fundingpost = await this.fundingRepository
+      .createQueryBuilder('Funding')
+      .where('Funding.funding_id = :funding_id', { funding_id: funding_id })
+      .getOne();
+
+    await this.fundingLikeRepository.save({
+      funding_like: true,
+      Funding: fundingpost,
+      Users: user,
+    });
+    return { message: '관심 등록이 성공하였습니다' };
   }
 }
