@@ -51,24 +51,16 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
 
-    # - name: Deploy using Docker Compose
-    #   uses: docker/compose-action@v2
-    #   with:
-    #     compose-file: docker-compose.yml
-    #     compose-args: up -d
         
-    - name: ssh connect & production
+    - name: ssh connect & start sh
       uses: appleboy/ssh-action@master
-      env:
-        COMPOSE: "./docker-compose.yaml"
       with:
         host: ${{ secrets.HOST }}
         username: ubuntu
         password: ${{ secrets.PASSWORD }}
         port: 22
         script: |
-          sudo docker system prune -a --volumes -f
-          sudo docker-compose -f $COMPOSE down --rmi all
-          sudo docker compose pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
-          sudo docker compose up -f $COMPOSE up -d
+          sudo sh deploy.sh
+          sudo docker ps
+
 
