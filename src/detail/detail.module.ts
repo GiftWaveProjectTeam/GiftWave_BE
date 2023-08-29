@@ -7,9 +7,18 @@ import { JwtStrategy } from 'src/auth/jwt/jwt.strategy';
 import { Payment } from 'src/entities/Payment.entity';
 import { Users } from 'src/entities/Users.entity';
 import { Celebration } from 'src/entities/Celebration.entity';
+import { FundingLike } from 'src/entities/FundingLike.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Funding, Payment, Users, Celebration])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Funding,
+      Payment,
+      Users,
+      Celebration,
+      FundingLike,
+    ]),
+  ],
   controllers: [DetailController],
   providers: [DetailService, JwtStrategy],
 })
